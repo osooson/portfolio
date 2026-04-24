@@ -887,29 +887,29 @@ function filterTab(f, el) {
   renderAll();
 }
 
-// ── 종목 탭: 길게 눌러서 삭제 ──────────────────
+// ── 종목 길게 누르기 / 삭제 버튼 ──────────────────
 let longPressTimer = null;
-function stockTap(acct, idx, e) {
-  // 터치 디바이스에서 삭제 안내
-}
-function longPress(acct, idx, e) {
-  e.preventDefault();
-  openDelModal(acct, idx);
-}
+let longPressFired = false;
 
-// 터치 이벤트로 길게 누르기 처리
 document.addEventListener('touchstart', e => {
   const row = e.target.closest('.stock-row');
   if (!row) return;
+  longPressFired = false;
   longPressTimer = setTimeout(() => {
-    const acct = row.getAttribute('data-acct') ||
-      row.onclick?.toString().match(/'([^']+)'/)?.[1];
-    // data attribute 방식으로 개선
+    longPressFired = true;
+    const acct = row.dataset.acct;
+    const idx  = parseInt(row.dataset.idx);
+    if (acct) openDelModal(acct, idx);
   }, 600);
-}, {passive:true});
-document.addEventListener('touchend', () => {
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
   clearTimeout(longPressTimer);
-}, {passive:true});
+}, {passive: true});
+
+document.addEventListener('touchmove', e => {
+  clearTimeout(longPressTimer);
+}, {passive: true});
 
 // ── 삭제 모달 ──────────────────────────────────
 function openDelModal(acct, idx) {
