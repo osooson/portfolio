@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>스마트 포트폴리오 관리</title>
+<title>내 포트폴리오</title>
 <style>
+  /* [기존 스타일 유지] */
   :root {
     --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
     --surface: #1e293b; --text: #f1f5f9; --text2: #94a3b8;
@@ -13,243 +14,134 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
-  
-  /* 헤더 및 하단 네비게이션 */
-  .header { position: sticky; top: 0; z-index: 100; background: rgba(15,23,42,0.8); backdrop-filter: blur(10px); padding: 16px; border-bottom: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--bg2); display: flex; border-top: 0.5px solid var(--border); z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-  .nav-item { flex: 1; padding: 15px; text-align: center; color: var(--text2); font-size: 12px; cursor: pointer; }
-  .nav-item.active { color: var(--blue); font-weight: bold; }
-
-  /* 컨텐츠 영역 */
-  .page { display: none; padding: 16px; }
-  .page.active { display: block; }
-
-  /* 요약 카드 */
-  .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .header { position: sticky; top: 0; z-index: 100; background: rgba(15,23,42,0.85); backdrop-filter: blur(10px); padding: 16px; border-bottom: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .summary { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .s-card { background: var(--surface); padding: 16px; border-radius: var(--radius); border-top: 3px solid var(--blue); }
   .s-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
   .s-value { font-size: 18px; font-weight: 700; }
-
-  /* 리스트 스타일 */
-  .acct-card { background: var(--surface); margin-bottom: 12px; border-radius: var(--radius); overflow: hidden; }
+  .acct-card { background: var(--surface); margin: 0 16px 12px; border-radius: var(--radius); overflow: hidden; }
   .acct-header { padding: 12px 16px; background: rgba(255,255,255,0.03); font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; }
   .stock-row { display: flex; justify-content: space-between; padding: 14px 16px; border-top: 0.5px solid var(--border); }
-  .history-row { padding: 12px 16px; border-bottom: 0.5px solid var(--border); font-size: 13px; }
-  .history-grid { display: flex; justify-content: space-between; align-items: center; }
-  
   .pos { color: var(--green); } .neg { color: var(--red); }
-  .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 5px; }
-  .badge-buy { background: rgba(34,197,94,0.2); color: var(--green); }
-  .badge-sell { background: rgba(239,68,68,0.2); color: var(--red); }
-
-  /* 모달 */
-  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: flex-end; }
-  .modal.open { display: flex; }
-  .sheet { background: var(--bg2); width: 100%; padding: 20px 20px 40px; border-radius: 20px 20px 0 0; animation: slideUp 0.3s; }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  input, select { width: 100%; padding: 12px; margin: 8px 0 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg3); color: #fff; font-size: 16px; }
-  .btn { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
-  .btn-save { background: var(--blue); color: #fff; }
+  .stock-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .stock-info { font-size: 11px; color: var(--text2); }
+  .fab { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 28px; background: var(--blue); color: #fff; font-size: 30px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <span id="page-title" style="font-weight:700">보유 종목</span>
-  <div class="live-badge"><span id="status">연결됨</span></div>
+  <span style="font-weight:700">보유 종목</span>
+  <div id="status" style="font-size:12px; color:var(--green)">연결됨</div>
 </div>
 
-<div id="page-holdings" class="page active">
-  <div class="summary">
-    <div class="s-card">
-      <div class="s-label">총 평가자산</div>
-      <div class="s-value" id="total-val">₩0</div>
-    </div>
-    <div class="s-card">
-      <div class="s-label">총 수익률</div>
-      <div class="s-value" id="total-ret">0.00%</div>
-    </div>
+<div class="summary">
+  <div class="s-card">
+    <div class="s-label">총 평가자산</div>
+    <div class="s-value" id="total-val">₩0</div>
   </div>
-  <div id="holdings-container"></div>
-</div>
-
-<div id="page-history" class="page">
-  <div id="history-container"></div>
-</div>
-
-<div class="nav-bar">
-  <div class="nav-item active" onclick="showPage('holdings', this)">📊 자산현황</div>
-  <div class="nav-item" onclick="showPage('history', this)">📝 매매기록</div>
-  <div class="nav-item" onclick="toggleModal(true)" style="color: var(--blue)">➕ 기록하기</div>
-</div>
-
-<div class="modal" id="trade-modal">
-  <div class="sheet">
-    <h3>매매 내역 입력</h3>
-    <select id="f-type">
-      <option value="BUY">매수 (Buy)</option>
-      <option value="SELL">매도 (Sell)</option>
-    </select>
-    <input type="text" id="f-acct" placeholder="계좌명 (예: 키움)">
-    <input type="text" id="f-ticker" placeholder="종목코드 (예: 005930)">
-    <select id="f-mkt">
-      <option value="KRX">한국 주식</option>
-      <option value="US">미국 주식</option>
-    </select>
-    <div style="display:flex; gap:10px">
-      <input type="number" id="f-qty" placeholder="수량">
-      <input type="number" id="f-price" placeholder="단가">
-    </div>
-    <button class="btn btn-save" onclick="addTrade()">기록 저장</button>
-    <button class="btn" style="background:transparent; color:var(--text2)" onclick="toggleModal(false)">취소</button>
+  <div class="s-card">
+    <div class="s-label">총 수익률</div>
+    <div class="s-value" id="total-ret">0.00%</div>
   </div>
 </div>
+
+<div id="container"></div>
 
 <script>
-// 데이터 구조: 모든 데이터의 근원은 trades(매매 내역)입니다.
-let trades = JSON.parse(localStorage.getItem('pf_trades_v1')) || [];
-let currentPrices = {}; // 실시간 가격 임시 저장용
-
-function toggleModal(show) {
-  document.getElementById('trade-modal').classList.toggle('open', show);
-}
-
-function showPage(pageId, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + pageId).classList.add('active');
-  el.classList.add('active');
-  document.getElementById('page-title').textContent = pageId === 'holdings' ? '보유 종목' : '매매 내역';
-  render();
-}
-
-// ── 매매 내역 추가 ──
-function addTrade() {
-  const trade = {
-    id: Date.now(),
-    type: document.getElementById('f-type').value,
-    acct: document.getElementById('f-acct').value.trim() || '기본계좌',
-    ticker: document.getElementById('f-ticker').value.trim().toUpperCase(),
-    market: document.getElementById('f-mkt').value,
-    qty: parseFloat(document.getElementById('f-qty').value),
-    price: parseFloat(document.getElementById('f-price').value),
-    date: new Date().toLocaleDateString()
-  };
-
-  if(!trade.ticker || isNaN(trade.qty)) return alert("입력값을 확인하세요.");
-  
-  trades.unshift(trade); // 최신 내역이 위로
-  localStorage.setItem('pf_trades_v1', JSON.stringify(trades));
-  
-  toggleModal(false);
-  refreshPrices(); // 가격 새로고침 및 렌더링
-}
-
-// ── 매매 내역을 바탕으로 보유 현황 계산 ──
-function calculateHoldings() {
-  let holdings = {};
-  
-  // 오래된 내역부터 순차 계산하여 선입선출 평단가 도출
-  [...trades].reverse().forEach(t => {
-    const key = `${t.acct}_${t.ticker}`;
-    if (!holdings[key]) {
-      holdings[key] = { acct: t.acct, ticker: t.ticker, market: t.market, qty: 0, totalCost: 0, name: t.ticker };
+// 데이터 구조 (이미지 기반으로 초기값 설정)
+let portfolio = JSON.parse(localStorage.getItem('pf_v2')) || {
+  accounts: {
+    "기본계좌": {
+      stocks: [
+        {ticker: "000660", market: "KRX", qty: 9, avg: 1050222}
+      ]
     }
-    
-    const h = holdings[key];
-    if (t.type === 'BUY') {
-      h.qty += t.qty;
-      h.totalCost += (t.qty * t.price);
-    } else {
-      // 매도 시 수량 차감 (평단은 유지)
-      const avg = h.totalCost / h.qty;
-      h.qty -= t.qty;
-      h.totalCost = h.qty * avg;
-    }
-  });
+  }
+};
 
-  // 수량이 0인 종목은 제외
-  return Object.values(holdings).filter(h => h.qty > 0);
-}
-
-// ── 네이버/야후 가격 조회 ──
-async function fetchPrice(ticker, market) {
+// ── 핵심: 실시간 가격 및 종목명 조회 (CORS 우회) ──
+async function fetchStockData(ticker, market) {
   try {
-    const url = market === 'KRX' 
-      ? `https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:${ticker}`
-      : `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}`;
+    // 한국 주식 티커 보정 (숫자 6자리인 경우)
+    let symbol = ticker;
+    if (market === 'KRX' && !ticker.includes('.')) {
+      symbol = ticker + ".KS"; 
+    }
+
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1d&interval=1d`;
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    
     const res = await fetch(proxyUrl);
     const data = await res.json();
     const contents = JSON.parse(data.contents);
-
-    if (market === 'KRX') {
-      const item = contents.result.areas[0].datas[0];
-      return { p: item.nv, n: item.nm };
-    } else {
-      const meta = contents.chart.result[0].meta;
-      return { p: meta.regularMarketPrice, n: ticker };
-    }
-  } catch (e) { return null; }
+    
+    const meta = contents.chart.result[0].meta;
+    return {
+      price: meta.regularMarketPrice,
+      name: meta.shortName || ticker // API에서 제공하는 종목명 사용
+    };
+  } catch (e) {
+    console.error(ticker, "조회 실패");
+    return null;
+  }
 }
 
-async function refreshPrices() {
+async function refreshAll() {
   document.getElementById('status').textContent = "조회 중...";
-  const holdings = calculateHoldings();
   
-  for (const h of holdings) {
-    const data = await fetchPrice(h.ticker, h.market);
-    if (data) {
-      currentPrices[h.ticker] = data.p;
-      h.name = data.n;
+  for (const acct in portfolio.accounts) {
+    for (const s of portfolio.accounts[acct].stocks) {
+      const live = await fetchStockData(s.ticker, s.market);
+      if (live) {
+        s.curPrice = live.price;
+        s.name = live.name;
+      }
     }
   }
+  
   document.getElementById('status').textContent = "실시간 완료";
   render();
 }
 
 function render() {
-  // 1. 보유 현황 렌더링
-  const holdings = calculateHoldings();
-  const holdContainer = document.getElementById('holdings-container');
-  holdContainer.innerHTML = '';
-  
+  const container = document.getElementById('container');
+  container.innerHTML = '';
   let tVal = 0, tCost = 0;
-  
-  const acctGroups = holdings.reduce((acc, h) => {
-    if (!acc[h.acct]) acc[h.acct] = [];
-    acc[h.acct].push(h);
-    return acc;
-  }, {});
 
-  for (const acct in acctGroups) {
-    let acctVal = 0;
-    const rows = acctGroups[acct].map(h => {
-      const cur = currentPrices[h.ticker] || h.totalCost / h.qty;
-      const avg = h.totalCost / h.qty;
-      const val = cur * h.qty;
-      const cost = h.totalCost;
-      tVal += val; tCost += cost; acctVal += val;
-      const pnl = ((cur - avg) / avg * 100).toFixed(2);
-      
+  for (const acct in portfolio.accounts) {
+    let acctSum = 0;
+    const card = document.createElement('div');
+    card.className = 'acct-card';
+    
+    const rows = portfolio.accounts[acct].stocks.map(s => {
+      const cur = s.curPrice || s.avg; // 가격 못 가져오면 평단가로 표시
+      const val = cur * s.qty;
+      const cost = s.avg * s.qty;
+      tVal += val; tCost += cost; acctSum += val;
+      const pnl = ((cur - s.avg) / s.avg * 100).toFixed(2);
+      const isPriceLoaded = !!s.curPrice;
+
       return `
         <div class="stock-row">
           <div>
-            <div style="font-weight:600">${h.name || h.ticker}</div>
-            <div class="stock-info">${h.qty}주 · 평단 ₩${Math.round(avg).toLocaleString()}</div>
+            <div class="stock-name">${s.name || s.ticker}</div>
+            <div class="stock-info">${s.ticker} · ${s.qty}주 · ₩${s.avg.toLocaleString()}</div>
           </div>
           <div style="text-align:right">
-            <div style="font-weight:600">₩${Math.round(val).toLocaleString()}</div>
-            <div class="stock-info ${pnl>=0?'pos':'neg'}">${pnl>=0?'+':''}${pnl}%</div>
+            <div style="font-weight:600" class="${!isPriceLoaded ? 'neu' : ''}">
+              ₩${Math.round(val).toLocaleString()}
+            </div>
+            <div class="stock-info ${pnl >= 0 ? 'pos' : 'neg'}">
+              ${isPriceLoaded ? (pnl >= 0 ? '+' : '') + pnl + '%' : '조회 대기'}
+            </div>
           </div>
-        </div>`;
+        </div>
+      `;
     }).join('');
 
-    holdContainer.innerHTML += `
-      <div class="acct-card">
-        <div class="acct-header"><span>🏦 ${acct}</span><span>₩${Math.round(acctVal).toLocaleString()}</span></div>
-        ${rows}
-      </div>`;
+    card.innerHTML = `<div class="acct-header"><span>🏦 ${acct}</span><span>₩${Math.round(acctSum).toLocaleString()}</span></div>${rows}`;
+    container.appendChild(card);
   }
 
   document.getElementById('total-val').textContent = '₩' + Math.round(tVal).toLocaleString();
@@ -257,31 +149,13 @@ function render() {
   const retEl = document.getElementById('total-ret');
   retEl.textContent = (totalRet >= 0 ? '+' : '') + totalRet + '%';
   retEl.className = 's-value ' + (totalRet >= 0 ? 'pos' : 'neg');
-
-  // 2. 매매 내역 렌더링
-  const histContainer = document.getElementById('history-container');
-  histContainer.innerHTML = trades.length ? '' : '<div style="text-align:center; padding:40px; color:var(--text2)">기록이 없습니다.</div>';
-  trades.forEach(t => {
-    histContainer.innerHTML += `
-      <div class="history-row">
-        <div class="history-grid">
-          <div>
-            <span class="badge ${t.type==='BUY'?'badge-buy':'badge-sell'}">${t.type==='BUY'?'매수':'매도'}</span>
-            <span style="font-weight:600">${t.ticker}</span>
-            <div style="font-size:11px; color:var(--text2); margin-top:4px">${t.date} · ${t.acct}</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-weight:600">${t.qty}주</div>
-            <div style="font-size:11px; color:var(--text2)">₩${t.price.toLocaleString()}</div>
-          </div>
-        </div>
-      </div>`;
-  });
+  
+  localStorage.setItem('pf_v2', JSON.stringify(portfolio));
 }
 
-// 초기 로드
+// 실행
 render();
-refreshPrices();
+refreshAll();
 </script>
 </body>
 </html>
