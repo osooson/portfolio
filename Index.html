@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="내 포트폴리오">
+<meta name="theme-color" content="#0f172a">
+<title>내 포트폴리오</title>
+
+<!-- PWA 아이콘 (홈 화면 추가 시 사용) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23185FA5'/%3E%3Ctext y='.9em' font-size='75' x='12' fill='white'%3E📈%3C/text%3E%3C/svg%3E">
+
+<style>
+:root {
+  --bg: #0f172a;
+  --bg2: #1e293b;
+  --bg3: #334155;
+  --surface: #1e293b;
+  --surface2: #273548;
+  --border: rgba(148,163,184,0.12);
+  --border2: rgba(148,163,184,0.22);
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --blue: #3b82f6;
+  --blue-light: #60a5fa;
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --amber: #f59e0b;
+  --teal: #14b8a6;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow-x: hidden;
+}
+
+/* ── 헤더 ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15,23,42,0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid var(--border);
+  padding: calc(var(--safe-top) + 12px) 16px 12px;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-actions { display: flex; gap: 8px; align-items: center; }
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 20px;
+  background: var(--green-dim);
+  color: var(--green);
+  border: 0.5px solid rgba(34,197,94,0.25);
+}
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+}
+.updated-row {
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* ── 요약 카드 ── */
+.summary {
+  padding: 14px 16px;
+  background: var(--bg);
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.s-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.s-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.s-card.blue::before { background: linear-gradient(90deg, var(--blue), var(--teal)); }
+.s-card.green::before { background: linear-gradient(90deg, var(--green), var(--teal)); }
+.s-card.red::before { background: linear-gradient(90deg, var(--red), var(--amber)); }
+.s-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; font-weight: 500; }
+.s-value { font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+.s-sub { font-size: 12px; margin-top: 3px; }
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.neu { color: var(--text2); }
+
+/* ── 탭 ── */
+.tabs-wrap {
+  padding: 0 16px 10px;
+  background: var(--bg);
+}
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  border: 0.5px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+
+/* ── 계좌 카드 ── */
+.section { padding: 0 16px; }
+.acct-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.acct-card:active { border-color: var(--border2); }
+.acct-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.acct-left { display: flex; align-items: center; gap: 8px; }
+.acct-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.acct-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.acct-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(59,130,246,0.15);
+  color: var(--blue-light);
+  font-weight: 500;
+}
+.acct-right { display: flex; align-items: center; gap: 10px; }
+.acct-total-val { font-size: 14px; font-weight: 600; color: var(--text); text-align: right; }
+.acct-total-chg { font-size: 11px; text-align: right; margin-top: 1px; }
+.chevron { font-size: 12px; color: var(--text3); transition: transform 0.2s; }
+.chevron.open { transform: rotate(180deg); }
+
+/* ── 종목 테이블 ── */
+.stock-table { border-top: 0.5px solid var(--border); }
+.stock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-bottom: 0.5px solid var(--border);
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.stock-row:last-child { border-bottom: none; }
+.stock-row:active { background: var(--bg3); }
+.stock-left { flex: 1; min-width: 0; }
+.ticker-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.ticker { font-size: 13px; font-weight: 600; color: var(--text); }
+.mkt-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.mkt-KRX { background: rgba(20,184,166,0.18); color: var(--teal); }
+.mkt-US  { background: rgba(59,130,246,0.18); color: var(--blue-light); }
+.mkt-ETF { background: rgba(245,158,11,0.18); color: var(--amber); }
+.stock-name { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stock-right { text-align: right; flex-shrink: 0; }
+.stock-price { font-size: 13px; font-weight: 600; color: var(--text); }
+.stock-chg { font-size: 11px; margin-top: 2px; }
+.stock-val { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.price-dim { color: var(--text3); font-style: italic; }
+
+/* ── 미니 스파크 색상 표시 ── */
+.chg-bar {
+  display: inline-block;
+  width: 36px; height: 3px;
+  border-radius: 2px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ── 추가 버튼 ── */
+.add-row { padding: 4px 0 16px; }
+.add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 11px;
+  border: 0.5px dashed var(--border2);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text3);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.add-btn:active { background: var(--surface); color: var(--text2); }
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: calc(20px + var(--safe-bottom));
+  right: 20px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+  z-index: 90;
+  transition: transform 0.15s;
+}
+.fab:active { transform: scale(0.93); }
+
+/* ── 빈 상태 ── */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text3);
+}
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-title { font-size: 15px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+.empty-desc { font-size: 13px; line-height: 1.6; }
+
+/* ── 바텀시트 모달 ── */
+.sheet-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.sheet-bg.open { display: flex; }
+.sheet {
+  background: var(--bg2);
+  border-radius: 20px 20px 0 0;
+  padding: 0 16px calc(20px + var(--safe-bottom));
+  width: 100%;
+  max-width: 480px;
+  border: 0.5px solid var(--border);
+  border-bottom: none;
+  animation: slideUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-handle {
+  width: 36px; height: 4px;
+  border-radius: 2px;
+  background: var(--bg3);
+  margin: 10px auto 16px;
+}
+.sheet-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid var(--border);
+}
+.sheet-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+.s-tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 0.5px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+}
+.s-tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.form-row { margin-bottom: 12px; }
+.form-label { font-size: 12px; color: var(--text3); margin-bottom: 5px; font-weight: 500; }
+.form-row input,
+.form-row select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--bg3);
+  color: var(--text);
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-row input:focus,
+.form-row select:focus { border-color: var(--blue); }
+.form-row input::placeholder { color: var(--text3); }
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.csv-hint {
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.csv-hint code { color: var(--blue-light); font-family: 'SF Mono', monospace; font-size: 11px; }
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.btn-cancel {
+  padding: 13px;
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-save {
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-save:active { opacity: 0.85; }
+
+/* ── 설치 안내 배너 ── */
+.install-banner {
+  margin: 0 16px 12px;
+  background: rgba(59,130,246,0.1);
+  border: 0.5px solid rgba(59,130,246,0.3);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.install-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.install-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.install-text strong { color: var(--blue-light); }
+.install-close {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 0 0 6px;
+  line-height: 1;
+}
+
+/* ── 삭제 확인 ── */
+.del-sheet { padding: 16px; }
+.del-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.del-desc { font-size: 13px; color: var(--text3); margin-bottom: 20px; }
+.btn-delete {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--red);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.btn-full-cancel {
+  width: 100%;
+  padding: 13px;
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* 바닥 여백 */
+.bottom-pad { height: calc(80px + var(--safe-bottom)); }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <div class="header-row">
+    <span class="header-title">내 포트폴리오</span>
+    <div class="header-actions">
+      <div class="live-badge" id="live-badge">
+        <span class="live-dot" id="live-dot"></span>
+        <span id="live-label">실시간</span>
+      </div>
+      <button class="icon-btn" onclick="refreshPrices()" title="새로고침">↻</button>
+    </div>
+  </div>
+  <div class="updated-row" id="updated-time">업데이트: --</div>
+</div>
+
+<!-- 설치 안내 -->
+<div class="install-banner" id="install-banner">
+  <span class="install-icon">📲</span>
+  <span class="install-text">
+    <strong>홈 화면 앱으로 추가하기</strong><br>
+    Safari → 하단 공유 버튼 → "홈 화면에 추가"
+  </span>
+  <button class="install-close" onclick="closeBanner()">✕</button>
+</div>
+
+<!-- 요약 카드 -->
+<div class="summary">
+  <div class="summary-grid">
+    <div class="s-card blue">
+      <div class="s-label">총 평가금액</div>
+      <div class="s-value" id="total-val">--</div>
+      <div class="s-sub neu" id="total-cost-label">--</div>
+    </div>
+    <div class="s-card" id="ret-card">
+      <div class="s-label">총 수익률</div>
+      <div class="s-value" id="total-ret">--</div>
+      <div class="s-sub" id="total-pnl">--</div>
+    </div>
+  </div>
+</div>
+
+<!-- 탭 -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="filterTab('all', this)">전체</button>
+    <button class="tab" onclick="filterTab('KRX', this)">🇰🇷 한국</button>
+    <button class="tab" onclick="filterTab('US', this)">🇺🇸 미국</button>
+    <button class="tab" onclick="filterTab('ETF', this)">ETF</button>
+  </div>
+</div>
+
+<!-- 계좌 목록 -->
+<div class="section" id="accounts-container"></div>
+<div class="bottom-pad"></div>
+
+<!-- FAB -->
+<button class="fab" onclick="openModal()">＋</button>
+
+<!-- 종목 추가 모달 -->
+<div class="sheet-bg" id="modal" onclick="closeOnBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">종목 추가</div>
+    <div class="sheet-tabs">
+      <button class="s-tab active" onclick="switchModalTab('manual', this)">직접 입력</button>
+      <button class="s-tab" onclick="switchModalTab('csv', this)">CSV 불러오기</button>
+    </div>
+
+    <!-- 직접 입력 -->
+    <div id="tab-manual">
+      <div class="form-row">
+        <div class="form-label">계좌 선택</div>
+        <select id="f-acct" onchange="onAcctChange()">
+          <option value="">계좌를 선택하세요</option>
+          <option value="__new__">+ 새 계좌 추가</option>
+        </select>
+      </div>
+      <div class="form-row" id="new-acct-row" style="display:none;">
+        <div class="form-label">새 계좌명</div>
+        <input type="text" id="f-acct-new" placeholder="예: 키움증권 ISA">
+      </div>
+      <div class="form-2col">
+        <div class="form-row">
+          <div class="form-label">티커 심볼</div>
+          <input type="text" id="f-ticker" placeholder="예: 005930.KS" autocapitalize="characters">
+        </div>
+        <div class="form-row">
+          <div class="form-label">시장</div>
+          <select id="f-market">
+            <option value="KRX">한국 KRX</option>
+            <option value="US">미국 US</option>
+            <option value="ETF">ETF</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">종목명</div>
+        <input type="text" id="f-name" placeholder="예: 삼성전자">
+      </div>
+      <div class="form-2col">
+        <div class="form-row">
+          <div class="form-label">보유 수량 (주)</div>
+          <input type="number" id="f-qty" placeholder="0" inputmode="decimal">
+        </div>
+        <div class="form-row">
+          <div class="form-label">평균 단가</div>
+          <input type="number" id="f-avg" placeholder="0" inputmode="decimal">
+        </div>
+      </div>
+      <div class="csv-hint" style="font-size:11px;padding:8px 10px;">
+        💡 KRX 티커: <code>005930.KS</code> (삼성전자)<br>
+        미국: <code>AAPL</code>, <code>TSLA</code><br>
+        ETF: <code>069500.KS</code> (KODEX200), <code>SPY</code>
+      </div>
+    </div>
+
+    <!-- CSV 불러오기 -->
+    <div id="tab-csv" style="display:none;">
+      <div class="csv-hint">
+        <strong style="color:var(--text2);">CSV 형식 (헤더 없이):</strong><br>
+        <code>계좌명,티커,시장,종목명,수량,평균단가</code><br><br>
+        예시:<br>
+        <code>키움ISA,005930.KS,KRX,삼성전자,100,72000</code><br>
+        <code>미래에셋,AAPL,US,Apple,10,175.5</code><br>
+        <code>키움ISA,069500.KS,ETF,KODEX200,30,32000</code>
+      </div>
+      <div class="form-row">
+        <div class="form-label">CSV 파일 선택</div>
+        <input type="file" id="f-csv" accept=".csv,.txt">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-save" id="save-btn" onclick="saveStock()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 삭제 확인 모달 -->
+<div class="sheet-bg" id="del-modal" onclick="closeDelOnBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="del-sheet">
+      <div class="del-title" id="del-title">종목 삭제</div>
+      <div class="del-desc" id="del-desc">이 종목을 삭제하시겠습니까?</div>
+      <button class="btn-delete" onclick="confirmDelete()">삭제</button>
+      <button class="btn-full-cancel" onclick="closeDelModal()">취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 데이터 ──────────────────────────────────────
+const DEFAULT_DATA = {
+  accounts: {
+    "키움 ISA": {
+      icon: "🏦",
+      stocks: [
+        {ticker:"005930.KS", name:"삼성전자", market:"KRX", qty:50, avg:72000, price:null, chg:null},
+        {ticker:"000660.KS", name:"SK하이닉스", market:"KRX", qty:20, avg:158000, price:null, chg:null},
+        {ticker:"069500.KS", name:"KODEX 200", market:"ETF", qty:30, avg:32000, price:null, chg:null},
+      ]
+    },
+    "미래에셋 해외주식": {
+      icon: "🌐",
+      stocks: [
+        {ticker:"AAPL", name:"Apple", market:"US", qty:10, avg:175.5, price:null, chg:null},
+        {ticker:"NVDA", name:"NVIDIA", market:"US", qty:5, avg:485, price:null, chg:null},
+        {ticker:"SPY", name:"S&P500 ETF", market:"ETF", qty:5, avg:510, price:null, chg:null},
+      ]
+    }
+  }
+};
+
+let portfolio = (() => {
+  try {
+    const saved = localStorage.getItem('pf_v2');
+    return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+})();
+
+function saveData() {
+  try { localStorage.setItem('pf_v2', JSON.stringify(portfolio)); } catch(e) {}
+}
+
+let currentFilter = 'all';
+let modalTab = 'manual';
+let deleteTarget = null; // {acct, idx}
+
+// ── 배너 ──────────────────────────────────────
+function closeBanner() {
+  document.getElementById('install-banner').style.display = 'none';
+  localStorage.setItem('banner_closed', '1');
+}
+if (localStorage.getItem('banner_closed')) {
+  document.getElementById('install-banner').style.display = 'none';
+}
+// 이미 설치된 PWA 모드면 배너 숨김
+if (window.navigator.standalone) {
+  document.getElementById('install-banner').style.display = 'none';
+}
+
+// ── 가격 조회 ──────────────────────────────────
+async function fetchPrice(ticker) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=1d&interval=1d&corsDomain=finance.yahoo.com`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const d = await r.json();
+    const meta = d?.chart?.result?.[0]?.meta;
+    if (!meta) return null;
+    const price = meta.regularMarketPrice ?? meta.previousClose;
+    const prev = meta.previousClose ?? meta.chartPreviousClose;
+    const chg = prev && prev !== 0 ? (price - prev) / prev * 100 : 0;
+    return { price, chg };
+  } catch(e) { return null; }
+}
+
+async function refreshPrices() {
+  const badge = document.getElementById('live-badge');
+  const label = document.getElementById('live-label');
+  const dot = document.getElementById('live-dot');
+  label.textContent = '조회중';
+  dot.style.background = '#f59e0b';
+
+  const jobs = [];
+  const refs = [];
+  for (const [, data] of Object.entries(portfolio.accounts)) {
+    for (const s of data.stocks) {
+      jobs.push(fetchPrice(s.ticker));
+      refs.push(s);
+    }
+  }
+
+  const results = await Promise.allSettled(jobs);
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled' && r.value) {
+      refs[i].price = r.value.price;
+      refs[i].chg   = r.value.chg;
+    }
+  });
+
+  saveData();
+  renderAll();
+  label.textContent = '실시간';
+  dot.style.background = '#22c55e';
+  const now = new Date();
+  document.getElementById('updated-time').textContent =
+    '업데이트: ' + now.toLocaleString('ko-KR', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+// ── 포맷 헬퍼 ──────────────────────────────────
+function fmtPrice(n, market) {
+  if (n == null) return '--';
+  if (market === 'US' || (market === 'ETF' && n < 5000)) {
+    return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  return '₩' + Math.round(n).toLocaleString('ko-KR');
+}
+
+function fmtWon(n) {
+  if (n == null || isNaN(n)) return '--';
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (abs >= 1e8) return sign + '₩' + (abs/1e8).toFixed(1) + '억';
+  if (abs >= 1e4) return sign + '₩' + Math.round(abs).toLocaleString('ko-KR');
+  return sign + '$' + abs.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// KRW/USD 환율 근사 (실시간 조회 없이 고정 사용)
+const USD_KRW = 1370;
+
+function toKRW(val, market) {
+  if (val == null) return 0;
+  if (market === 'US' || (market === 'ETF' && val < 5000)) return val * USD_KRW;
+  return val;
+}
+
+// ── 요약 계산 ──────────────────────────────────
+function calcSummary() {
+  let totalVal = 0, totalCost = 0;
+  for (const [, data] of Object.entries(portfolio.accounts)) {
+    for (const s of data.stocks) {
+      if (currentFilter !== 'all' && s.market !== currentFilter) continue;
+      const cost = toKRW(s.avg * s.qty, s.market);
+      const cur  = s.price ? toKRW(s.price * s.qty, s.market) : cost;
+      totalCost += cost;
+      totalVal  += cur;
+    }
+  }
+  return { totalVal, totalCost };
+}
+
+function renderSummary() {
+  const { totalVal, totalCost } = calcSummary();
+  const pnl = totalVal - totalCost;
+  const ret = totalCost > 0 ? pnl / totalCost * 100 : 0;
+
+  document.getElementById('total-val').textContent = fmtWon(totalVal);
+  document.getElementById('total-cost-label').textContent = '투자원금 ' + fmtWon(totalCost);
+
+  const retEl = document.getElementById('total-ret');
+  retEl.textContent = (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%';
+  retEl.className = 's-value ' + (ret >= 0 ? 'pos' : ret < 0 ? 'neg' : 'neu');
+
+  const pnlEl = document.getElementById('total-pnl');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '') + fmtWon(pnl);
+  pnlEl.className = 's-sub ' + (pnl >= 0 ? 'pos' : pnl < 0 ? 'neg' : 'neu');
+
+  const retCard = document.getElementById('ret-card');
+  retCard.className = 's-card ' + (ret >= 0 ? 'green' : 'red');
+}
+
+// ── 계좌 렌더 ──────────────────────────────────
+function renderAccounts() {
+  const container = document.getElementById('accounts-container');
+  container.innerHTML = '';
+
+  let anyVisible = false;
+
+  for (const [acctName, data] of Object.entries(portfolio.accounts)) {
+    const filtered = data.stocks.filter(s => currentFilter === 'all' || s.market === currentFilter);
+    if (filtered.length === 0) continue;
+    anyVisible = true;
+
+    let acctVal = 0, acctCost = 0;
+    filtered.forEach(s => {
+      acctVal  += toKRW((s.price || s.avg) * s.qty, s.market);
+      acctCost += toKRW(s.avg * s.qty, s.market);
+    });
+    const ret = acctCost > 0 ? (acctVal - acctCost) / acctCost * 100 : 0;
+    const icon = data.icon || '🏦';
+
+    const div = document.createElement('div');
+    div.className = 'acct-card';
+    div.innerHTML = `
+      <div class="acct-header" onclick="toggleCard(this)">
+        <div class="acct-left">
+          <div class="acct-icon">${icon}</div>
+          <div>
+            <div class="acct-name">${escHtml(acctName)}</div>
+            <span class="acct-badge">${filtered.length}종목</span>
+          </div>
+        </div>
+        <div class="acct-right">
+          <div>
+            <div class="acct-total-val">${fmtWon(acctVal)}</div>
+            <div class="acct-total-chg ${ret>=0?'pos':'neg'}">${ret>=0?'+':''}${ret.toFixed(2)}%</div>
+          </div>
+          <span class="chevron open">▾</span>
+        </div>
+      </div>
+      <div class="stock-table">
+        ${filtered.map((s, i) => {
+          const realIdx = data.stocks.indexOf(s);
+          const cur  = s.price;
+          const pnlPct = cur != null ? (cur - s.avg) / s.avg * 100 : null;
+          const evalVal = (cur || s.avg) * s.qty;
+          const pnlAmt  = cur != null ? (cur - s.avg) * s.qty : null;
+          return `<div class="stock-row" oncontextmenu="longPress('${escAttr(acctName)}',${realIdx},event)" onclick="stockTap('${escAttr(acctName)}',${realIdx},event)">
+            <div class="stock-left">
+              <div class="ticker-row">
+                <span class="ticker">${escHtml(s.ticker)}</span>
+                <span class="mkt-badge mkt-${s.market}">${s.market}</span>
+              </div>
+              <div class="stock-name">${escHtml(s.name||'')} · ${s.qty}주 · avg ${fmtPrice(s.avg, s.market)}</div>
+            </div>
+            <div class="stock-right">
+              <div class="stock-price">${cur != null ? fmtPrice(cur, s.market) : '<span class="price-dim">조회중</span>'}</div>
+              <div class="stock-chg ${pnlPct!=null?(pnlPct>=0?'pos':'neg'):'neu'}">
+                ${pnlPct != null ? (pnlPct>=0?'+':'')+pnlPct.toFixed(2)+'%' : '평균가 기준'}
+              </div>
+              <div class="stock-val">${fmtWon(toKRW(evalVal, s.market))}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    container.appendChild(div);
+  }
+
+  if (!anyVisible) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.innerHTML = `
+      <div class="empty-icon">📊</div>
+      <div class="empty-title">보유 종목이 없습니다</div>
+      <div class="empty-desc">+ 버튼을 눌러 종목을 추가하거나<br>필터를 변경해보세요.</div>`;
+    container.appendChild(empty);
+  }
+
+  const addRow = document.createElement('div');
+  addRow.className = 'add-row';
+  addRow.innerHTML = '<button class="add-btn" onclick="openModal()">＋ 종목 추가</button>';
+  container.appendChild(addRow);
+}
+
+function renderAll() { renderSummary(); renderAccounts(); }
+
+// ── 카드 접기/펼치기 ──────────────────────────
+function toggleCard(header) {
+  const table = header.nextElementSibling;
+  const chev  = header.querySelector('.chevron');
+  const isOpen = table.style.display !== 'none';
+  table.style.display = isOpen ? 'none' : '';
+  chev.classList.toggle('open', !isOpen);
+}
+
+// ── 필터 탭 ──────────────────────────────────
+function filterTab(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderAll();
+}
+
+// ── 종목 탭: 길게 눌러서 삭제 ──────────────────
+let longPressTimer = null;
+function stockTap(acct, idx, e) {
+  // 터치 디바이스에서 삭제 안내
+}
+function longPress(acct, idx, e) {
+  e.preventDefault();
+  openDelModal(acct, idx);
+}
+
+// 터치 이벤트로 길게 누르기 처리
+document.addEventListener('touchstart', e => {
+  const row = e.target.closest('.stock-row');
+  if (!row) return;
+  longPressTimer = setTimeout(() => {
+    const acct = row.getAttribute('data-acct') ||
+      row.onclick?.toString().match(/'([^']+)'/)?.[1];
+    // data attribute 방식으로 개선
+  }, 600);
+}, {passive:true});
+document.addEventListener('touchend', () => {
+  clearTimeout(longPressTimer);
+}, {passive:true});
+
+// ── 삭제 모달 ──────────────────────────────────
+function openDelModal(acct, idx) {
+  const s = portfolio.accounts[acct]?.stocks[idx];
+  if (!s) return;
+  deleteTarget = {acct, idx};
+  document.getElementById('del-title').textContent = `${s.name || s.ticker} 삭제`;
+  document.getElementById('del-desc').textContent = `${acct}에서 ${s.ticker} (${s.qty}주)를 삭제하시겠습니까?`;
+  document.getElementById('del-modal').classList.add('open');
+}
+function closeDelModal() { document.getElementById('del-modal').classList.remove('open'); deleteTarget = null; }
+function closeDelOnBg(e) { if (e.target === document.getElementById('del-modal')) closeDelModal(); }
+function confirmDelete() {
+  if (!deleteTarget) return;
+  const {acct, idx} = deleteTarget;
+  portfolio.accounts[acct].stocks.splice(idx, 1);
+  if (portfolio.accounts[acct].stocks.length === 0) delete portfolio.accounts[acct];
+  saveData();
+  closeDelModal();
+  renderAll();
+}
+
+// ── 추가 모달 ──────────────────────────────────
+function openModal() {
+  refreshAcctSelect();
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeOnBg(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+function onAcctChange() {
+  const sel = document.getElementById('f-acct');
+  document.getElementById('new-acct-row').style.display = sel.value === '__new__' ? '' : 'none';
+}
+
+function refreshAcctSelect() {
+  const sel = document.getElementById('f-acct');
+  const opts = ['<option value="">계좌를 선택하세요</option>'];
+  Object.keys(portfolio.accounts).forEach(a => opts.push(`<option value="${escHtml(a)}">${escHtml(a)}</option>`));
+  opts.push('<option value="__new__">+ 새 계좌 추가</option>');
+  sel.innerHTML = opts.join('');
+}
+
+function switchModalTab(tab, el) {
+  modalTab = tab;
+  document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-manual').style.display = tab === 'manual' ? '' : 'none';
+  document.getElementById('tab-csv').style.display    = tab === 'csv'    ? '' : 'none';
+  document.getElementById('save-btn').textContent = tab === 'csv' ? '불러오기' : '저장';
+}
+
+function saveStock() {
+  if (modalTab === 'csv') { importCSV(); return; }
+  const acctSel = document.getElementById('f-acct').value;
+  const acctNew = document.getElementById('f-acct-new').value.trim();
+  const acct    = acctSel === '__new__' ? acctNew : acctSel;
+  const ticker  = document.getElementById('f-ticker').value.trim().toUpperCase();
+  const market  = document.getElementById('f-market').value;
+  const name    = document.getElementById('f-name').value.trim();
+  const qty     = parseFloat(document.getElementById('f-qty').value);
+  const avg     = parseFloat(document.getElementById('f-avg').value);
+
+  if (!acct)   { alert('계좌명을 입력하거나 선택하세요.'); return; }
+  if (!ticker) { alert('티커 심볼을 입력하세요.'); return; }
+  if (!qty || qty <= 0) { alert('보유 수량을 입력하세요.'); return; }
+  if (!avg || avg <= 0) { alert('평균 단가를 입력하세요.'); return; }
+
+  if (!portfolio.accounts[acct]) portfolio.accounts[acct] = { icon: '🏦', stocks: [] };
+  portfolio.accounts[acct].stocks.push({ ticker, name, market, qty, avg, price: null, chg: null });
+  saveData();
+  closeModal();
+  renderAll();
+  refreshPrices();
+
+  // 입력 초기화
+  ['f-ticker','f-name','f-qty','f-avg'].forEach(id => document.getElementById(id).value = '');
+}
+
+function importCSV() {
+  const file = document.getElementById('f-csv').files[0];
+  if (!file) { alert('CSV 파일을 선택하세요.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n').filter(l => l.trim());
+    let added = 0, errors = 0;
+    lines.forEach((line, i) => {
+      const parts = line.split(',').map(s => s.trim());
+      const [acct, ticker, market, name, qtyStr, avgStr] = parts;
+      if (!acct || !ticker) { errors++; return; }
+      const qty = parseFloat(qtyStr);
+      const avg = parseFloat(avgStr);
+      if (!qty || !avg) { errors++; return; }
+      if (!portfolio.accounts[acct]) portfolio.accounts[acct] = { icon: '🏦', stocks: [] };
+      portfolio.accounts[acct].stocks.push({
+        ticker: ticker.toUpperCase(), name: name || '', market: market || 'KRX',
+        qty, avg, price: null, chg: null
+      });
+      added++;
+    });
+    saveData();
+    closeModal();
+    renderAll();
+    refreshPrices();
+    alert(`${added}개 종목 추가 완료${errors > 0 ? ` (${errors}개 오류)` : ''}`);
+    document.getElementById('f-csv').value = '';
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+// ── 유틸 ──────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) { return String(s).replace(/'/g,"\\'"); }
+
+// ── 초기 실행 ──────────────────────────────────
+renderAll();
+refreshPrices();
+</script>
+</body>
+</html>
