@@ -25,6 +25,7 @@
   .stock-row { display: flex; justify-content: space-between; padding: 14px 16px; border-top: 0.5px solid var(--border); cursor: pointer; }
   .stock-row:active { background: var(--bg3); }
   .pos { color: var(--green); } .neg { color: var(--red); }
+  .stock-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
   .stock-info { font-size: 11px; color: var(--text2); }
   .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: flex-end; }
   .modal.open { display: flex; }
@@ -41,7 +42,7 @@
 <body>
 
 <div class="header">
-  <span style="font-weight:700">네이버 연동 포트폴리오</span>
+  <span style="font-weight:700">스마트 포트폴리오</span>
   <div class="live-badge"><div class="dot" id="live-dot"></div> <span id="status">연결됨</span></div>
 </div>
 
@@ -88,45 +89,45 @@
 </div>
 
 <script>
-let portfolio = JSON.parse(localStorage.getItem('pf_naver_v1')) || { accounts: {} };
+let portfolio = JSON.parse(localStorage.getItem('pf_smart_v1')) || { accounts: {} };
 let delRef = null;
 
 function toggleModal(id, show) {
   document.getElementById(id).classList.toggle('open', show);
 }
 
-// ── 네이버/야후 가격 호출 핵심 ──
-async function fetchPrice(ticker, market) {
+// ── 데이터 가져오기 (종목명 포함) ──
+async function fetchStockData(ticker, market) {
   try {
     if (market === 'KRX') {
-      // 네이버 금융 실시간 폴링 데이터 (프록시 사용)
       const url = `https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:${ticker}`;
       const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
       const data = await res.json();
       const json = JSON.parse(data.contents);
-      return json.result.areas[0].datas[0].nv; // 현재가(nv)
+      const item = json.result.areas[0].datas[0];
+      return { price: item.nv, name: item.nm }; // nv: 현재가, nm: 종목명
     } else {
-      // 미국 주식은 야후 파이낸스 유지
       const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}`;
       const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
       const data = await res.json();
       const json = JSON.parse(data.contents);
-      return json.chart.result[0].meta.regularMarketPrice;
+      const meta = json.chart.result[0].meta;
+      return { price: meta.regularMarketPrice, name: ticker }; // 미국은 티커를 이름으로 활용
     }
-  } catch (e) {
-    console.error(ticker, " 로드 실패");
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 async function refreshAll() {
-  document.getElementById('status').textContent = "네이버 연결 중...";
+  document.getElementById('status').textContent = "조회 중...";
   document.getElementById('live-dot').style.background = "#f59e0b";
 
   for (const acct in portfolio.accounts) {
     for (const s of portfolio.accounts[acct].stocks) {
-      const p = await fetchPrice(s.ticker, s.market);
-      if (p) s.curPrice = p;
+      const data = await fetchStockData(s.ticker, s.market);
+      if (data) {
+        s.curPrice = data.price;
+        if (data.name) s.name = data.name; // 종목명 업데이트
+      }
     }
   }
   
@@ -145,16 +146,21 @@ function addStock() {
   if(!ticker || !qty || !avg) return alert("정보를 모두 입력하세요.");
 
   if(!portfolio.accounts[acct]) portfolio.accounts[acct] = { stocks: [] };
-  portfolio.accounts[acct].stocks.push({ ticker, market, qty, avg, curPrice: avg });
+  portfolio.accounts[acct].stocks.push({ 
+    ticker, market, qty, avg, 
+    curPrice: avg, 
+    name: ticker // 초기값은 티커로 설정
+  });
 
-  localStorage.setItem('pf_naver_v1', JSON.stringify(portfolio));
+  localStorage.setItem('pf_smart_v1', JSON.stringify(portfolio));
   toggleModal('add-modal', false);
   refreshAll();
 }
 
 function openDel(acct, idx) {
   delRef = { acct, idx };
-  document.getElementById('del-title').textContent = portfolio.accounts[acct].stocks[idx].ticker + " 삭제";
+  const stock = portfolio.accounts[acct].stocks[idx];
+  document.getElementById('del-title').textContent = (stock.name || stock.ticker) + " 삭제";
   toggleModal('del-modal', true);
 }
 
@@ -162,7 +168,7 @@ function confirmDelete() {
   const { acct, idx } = delRef;
   portfolio.accounts[acct].stocks.splice(idx, 1);
   if(portfolio.accounts[acct].stocks.length === 0) delete portfolio.accounts[acct];
-  localStorage.setItem('pf_naver_v1', JSON.stringify(portfolio));
+  localStorage.setItem('pf_smart_v1', JSON.stringify(portfolio));
   toggleModal('del-modal', false);
   render();
 }
@@ -188,8 +194,8 @@ function render() {
       return `
         <div class="stock-row" onclick="openDel('${acct}', ${i})">
           <div>
-            <div style="font-weight:600">${s.ticker} <span class="stock-info">${s.market}</span></div>
-            <div class="stock-info">${s.qty}주 · 평단 ${s.avg.toLocaleString()}</div>
+            <div class="stock-name">${s.name || s.ticker}</div>
+            <div class="stock-info">${s.ticker} · ${s.qty}주 · ₩${s.avg.toLocaleString()}</div>
           </div>
           <div style="text-align:right">
             <div style="font-weight:600">₩${val.toLocaleString(undefined, {maximumFractionDigits:0})}</div>
